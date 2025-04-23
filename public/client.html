@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Jugadores</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            font-family: sans-serif;
+            flex-direction: column;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 1px solid #000;
+            background-color: #fff;
+            width: 100%;
+            height: auto;
+            max-width: 800px;
+        }
+        #status {
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+        }
+        #playerInput {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Visualizador de Jugadores</h1>
+    <canvas id="gameCanvas"></canvas>
+    <div id="status">Conectando...</div>
+    <script>
+        // --- Configuración ---
+        const SERVER_URL = 'http://localhost:4000/state';
+        const UPDATE_INTERVAL_MS = 33;
+        const PLAYER_SIZE = 10;
+        const PLAYER_COLOR = 'blue';
+        let PLAYER_ID = "";
+
+        // --- Elementos del DOM ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusDiv = document.getElementById('status');
+
+        // --- Lógica Principal ---
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawPlayer(x, y, color, size) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, size, size);
+        }
+
+        async function fetchAndDrawPlayers() {
+            try {
+                const response = await fetch(SERVER_URL);
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+                }
+                const players = await response.json();
+                clearCanvas();
+                if (Array.isArray(players)) {
+                    players.forEach(player => {
+                        if (typeof player.x === 'number' && typeof player.y === 'number') {
+                            drawPlayer(player.x, player.y, PLAYER_COLOR, PLAYER_SIZE);
+                        } else {
+                            console.warn('Jugador recibido con datos inválidos:', player);
+                        }
+                    });
+                    statusDiv.textContent = `Mostrando ${players.length} jugador(es). Última actualización: ${new Date().toLocaleTimeString()}`;
+                } else {
+                    console.error('La respuesta del servidor no fue un array:', players);
+                    statusDiv.textContent = 'Error: Formato de datos inesperado del servidor.';
+                }
+            } catch (error) {
+                console.error('Error al obtener o dibujar jugadores:', error);
+                statusDiv.textContent = `Error al conectar con el servidor (${SERVER_URL}). ¿Está corriendo? (${error.message})`;
+            }
+        }
+
+        // --- Inicio ---
+
+        // Intenta obtener el ID del jugador desde la caché al cargar la página
+        window.onload = () => {
+            const cachedPlayerId = localStorage.getItem('internalId');
+            if (cachedPlayerId) {
+                PLAYER_ID = cachedPlayerId;
+                console.log("ID de jugador cargado desde la caché:", PLAYER_ID);
+            } else {
+                console.log("No se encontró ID de jugador en la caché. Se usará el valor por defecto.");
+            }
+            // Llama a las funciones principales
+            fetchAndDrawPlayers();
+            setInterval(fetchAndDrawPlayers, UPDATE_INTERVAL_MS);
+            resizeCanvas();
+        };
+
+        // --- Detección de Teclas de Dirección ---
+        document.addEventListener('keydown', (event) => {
+            let action = '';
+            switch (event.key) {
+                case 'ArrowUp':
+                    action = 'u';
+                    break;
+                case 'ArrowDown':
+                    action = 'd';
+                    break;
+                case 'ArrowLeft':
+                    action = 'l';
+                    break;
+                case 'ArrowRight':
+                    action = 'r';
+                    break;
+                default:
+                    return;
+            }
+            fetch('/action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ internalId: PLAYER_ID, action: action })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Error al enviar acción:', response.status, response.statusText);
+                } else {
+                    console.log('Acción enviada:', action);
+                }
+            })
+            .catch(error => {
+                console.error('Error al enviar acción:', error);
+            });
+        });
+
+        // --- Ajuste de tamaño del canvas ---
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>
