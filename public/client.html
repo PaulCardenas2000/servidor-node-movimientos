@@ -57,7 +57,6 @@
 
     <script>
         // --- Configuración ---
-        const SERVER_URL = 'https://servidor-node-movimientos.vercel.app/state';
         const UPDATE_INTERVAL_MS = 33;
         const PLAYER_SIZE = 10;
         const PLAYER_COLOR = 'blue';
@@ -80,7 +79,7 @@
 
         async function fetchAndDrawPlayers() {
             try {
-                const response = await fetch(SERVER_URL);
+                const response = await fetch("/state");
                 if (!response.ok) {
                     throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
                 }
@@ -101,7 +100,7 @@
                 }
             } catch (error) {
                 console.error('Error al obtener o dibujar jugadores:', error);
-                statusDiv.textContent = `Error al conectar con el servidor (${SERVER_URL}). ¿Está corriendo? (${error.message})`;
+                statusDiv.textContent = `Error al conectar con el servidor (/state). ¿Está corriendo? (${error.message})`;
             }
         }
 
