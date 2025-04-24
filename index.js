@@ -189,8 +189,8 @@ app.post('/action', (req, res) => {
 
     // Verificar que el ID interno en el objeto jugador coincida (seguridad adicional)
     if (player.internalId !== internalId) {
-         console.warn(`Discrepancia de internalId para ${username}. Recibido: ${internalId}, Esperado: ${player.internalId}. Rechazando acción.`);
-         return res.status(401).json({ error: 'Conflicto de sesión. Vuelve a unirte (/join).'});
+        console.warn(`Discrepancia de internalId para ${username}. Recibido: ${internalId}, Esperado: ${player.internalId}. Rechazando acción.`);
+        return res.status(401).json({ error: 'Conflicto de sesión. Vuelve a unirte (/join).' });
     }
 
     // Procesar la acción
@@ -239,10 +239,16 @@ app.listen(PORT, () => {
 app.get('/game', (req, res) => {
     // Envía el archivo HTML como respuesta
     res.sendFile(path.join(__dirname, 'public', 'client.html'));
-  });
+});
 
-  // --- prueba de entorno ---
+// --- login
 app.get('/game-login', (req, res) => {
     // Envía el archivo HTML como respuesta
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
-  });
+});
+
+// --- registro
+app.get('/game-register', (req, res) => {
+    // Envía el archivo HTML como respuesta
+    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
