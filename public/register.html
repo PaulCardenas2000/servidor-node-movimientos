@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de Sesión</title>
+    <title>Registro</title>
     <style>
         body {
             display: flex;
@@ -57,11 +57,11 @@
 </head>
 <body>
     <form id="loginForm">
-        <h2>Inicio de Sesión</h2>
+        <h2>Registro de usuarios</h2>
         <input type="text" id="username" placeholder="Nombre de usuario" required>
         <input type="password" id="password" placeholder="Contraseña" required>
-        <button type="submit">Iniciar sesión</button>
-        <a href="/game-register">Registrarse</a>
+        <button type="submit">Registrarse</button>
+        <a href="/game-login">Iniciar Sesión</a>
         <div id="message"></div>
     </form>
 
@@ -72,7 +72,7 @@
         // Función para enviar la solicitud POST al endpoint /join
         async function login(username, password) {
             try {
-                const response = await fetch('/join', {
+                const response = await fetch('/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -81,20 +81,20 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Error al iniciar sesión: ${response.status} ${response.statusText}`);
+                    throw new Error(`Error al registrarse: ${response.status} ${response.statusText}`);
                 }
 
                 const data = await response.json(); // Parsea la respuesta JSON
 
                 // Almacenar la respuesta en localStorage
-                localStorage.setItem('internalId', data.internalId);
-                messageDiv.textContent = 'Inicio de sesión exitoso. ID almacenado en caché.';
+                localStorage.removeItem('clave');
+                messageDiv.textContent = 'Registro exitoso.';
                 // Redirigir a la página del juego
-                window.location.href = '/game'; // Cambiado a /game
+                window.location.href = '/game-login'; // Cambiado a /game
 
             } catch (error) {
-                console.error('Error al iniciar sesión:', error);
-                messageDiv.textContent = `Error al iniciar sesión: ${error.message}`;
+                console.error('Error al registrarse:', error);
+                messageDiv.textContent = `Error al registrarse: ${error.message}`;
             }
         }
 
@@ -106,14 +106,6 @@
             login(username, password);
         });
 
-        // Verificar si hay un ID en caché al cargar la página
-        window.onload = () => {
-            const internalId = localStorage.getItem('internalId');
-            if (internalId) {
-                // Si hay un ID en caché, redirigir a /game
-                window.location.href = '/game'; // Cambiado a /game
-            }
-        };
     </script>
 </body>
 </html>
