@@ -114,6 +114,7 @@
                 console.log("ID de jugador cargado desde la caché:", PLAYER_ID);
             } else {
                 console.log("No se encontró ID de jugador en la caché. Se usará el valor por defecto.");
+                window.location.href = '/game-login';
             }
             // Llama a las funciones principales
             fetchAndDrawPlayers();
@@ -165,15 +166,6 @@
         }
 
         window.addEventListener('resize', resizeCanvas);
-
-        // Verificar si hay un ID en caché al cargar la página
-        window.onload = () => {
-            const internalId = localStorage.getItem('internalId');
-            if (!internalId) {
-                // Si hay un ID en caché, redirigir a /game
-                window.location.href = '/game-login'; // Cambiado a /game
-            }
-        };
     </script>
 </body>
 
